@@ -4,3 +4,5 @@ __pycache__/
 .gradio/
 fia_pdfs/
 fia_chroma_db/
+structured_precedents.jsonl
+.gitattributes
