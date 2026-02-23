@@ -1,6 +1,5 @@
 import os
 import re
-import pytest
 import gradio as gr
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
