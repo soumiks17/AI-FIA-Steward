@@ -2,6 +2,7 @@
 .gradio/
 __pycache__/
 *.pyc
+fia_pdfs/
 
 # Optional: Data Pipeline Files
 # Uncomment the lines below if you only want to push the final app to Hugging Face,
