@@ -1,0 +1,6 @@
+gradio==4.44.1
+langchain-chroma
+langchain-openai
+langchain-core
+python-dotenv
+pytest
