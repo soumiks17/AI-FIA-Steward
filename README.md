@@ -12,9 +12,10 @@ An AI-powered Formula 1 steward that predicts penalties for on-track incidents b
 Describe incident → Semantic search → Retrieve precedents → LLM ruling
 ```
 
-1. User describes an on-track incident
-2. The query is embedded and searched against the vector database
-3. The 3 most semantically similar historical FIA decisions are retrieved
+1. User describes an on-track incident.
+2. The query is embedded and searched against the vector database.
+3. The 3 most semantically similar historical FIA decisions are retrieved.
+4. GPT-4o-mini reads the user's query and predicts the penalty that might be imposed on the driver or the team.
 
 
 ---
@@ -54,4 +55,4 @@ Each downloaded PDF is parsed to extract structured fields:
 
 ## Stack
 
-`Gradio` · `LangChain` · `ChromaDB` · `OpenAI GPT-4o-mini` · `text-embedding-3-small` · `BeautifulSoup` · `PyMuPDF`
+`Gradio` · `LangChain` · `ChromaDB`  · `text-embedding-3-small` · `BeautifulSoup` · `PyMuPDF`
