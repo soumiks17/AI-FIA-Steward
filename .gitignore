@@ -1,13 +1,6 @@
 .env
-.gradio/
 __pycache__/
 *.pyc
+.gradio/
 fia_pdfs/
-
-# Optional: Data Pipeline Files
-# Uncomment the lines below if you only want to push the final app to Hugging Face,
-# and keep your web scraping/database building scripts local.
-# FiaWebScrapping.py
-# FiaPDFTransform.py
-# F1_VectorDB.py
-# structured_precedents.jsonl
+fia_chroma_db/
