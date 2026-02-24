@@ -5,12 +5,21 @@ from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 from dotenv import load_dotenv
-from huggingface_hub import snapshot_download
 
 load_dotenv()
 
-# ── Download PDFs from HF Dataset if not present ──────────────────────────────
-if not os.path.exists("./fia_pdfs") or not os.listdir("./fia_pdfs"):
+from huggingface_hub import snapshot_download
+
+load_dotenv()
+if not os.path.exists("./fia_chroma_db") or not os.listdir("./fia_chroma_db"):
+    print("Downloading ChromaDB...")
+    snapshot_download(
+        repo_id="soumiks17/FIA-ChromaDB",
+        repo_type="dataset",
+        local_dir="./fia_chroma_db"
+    )
+    print("ChromaDB ready.")
+if not os.path.exists("./fia_pdfs"):
     print("Downloading PDFs...")
     snapshot_download(
         repo_id="soumiks17/FIA-PDFs",
@@ -19,11 +28,12 @@ if not os.path.exists("./fia_pdfs") or not os.listdir("./fia_pdfs"):
     )
     print("PDFs ready.")
 
+
 embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 db = Chroma(persist_directory="./fia_chroma_db", embedding_function=embeddings)
 llm = ChatOpenAI(temperature=0.0, model="gpt-4o-mini")
 
-RELEVANCE_THRESHOLD = 1.2
+RELEVANCE_THRESHOLD = 1.1
 
 template = """
 You are the Chief FIA Steward. Analyze the user's incident based strictly on the provided historical precedents.
@@ -60,44 +70,6 @@ def clean_cell(text):
     return text.replace('\n', ' ').replace('\r', '').strip()
 
 
-def find_pdf(raw_source):
-    """Try to locate the PDF file regardless of OS path differences."""
-    # Normalise separators
-    normalised = raw_source.replace("\\", "/")
-
-    # Extract the part after 'fia_pdfs/'
-    if "fia_pdfs/" in normalised:
-        relative = normalised.split("fia_pdfs/", 1)[1]
-    else:
-        relative = os.path.basename(normalised)
-
-    print(f"DEBUG raw_source: {raw_source}")
-    print(f"DEBUG relative: {relative}")
-
-    candidates = [
-        os.path.join("./fia_pdfs", relative),
-        os.path.join("/app/fia_pdfs", relative),
-        os.path.abspath(raw_source),
-    ]
-
-    for path in candidates:
-        path = os.path.normpath(path)
-        print(f"DEBUG trying: {path} — exists: {os.path.exists(path)}")
-        if os.path.exists(path):
-            return path
-
-    # Last resort: search by filename
-    filename = os.path.basename(normalised)
-    for root, dirs, files in os.walk("./fia_pdfs"):
-        if filename in files:
-            found = os.path.join(root, filename)
-            print(f"DEBUG found by walk: {found}")
-            return found
-
-    print("DEBUG PDF not found")
-    return None
-
-
 def build_context(docs_with_scores):
     context_for_llm = ""
     pdf_files = []
@@ -120,9 +92,9 @@ def build_context(docs_with_scores):
         raw_source = doc.metadata.get('source',   'Unknown')
         clean_source = format_event_name(raw_source)
 
-        pdf_path = find_pdf(raw_source)
-        if pdf_path:
-            pdf_files.append(pdf_path)
+        abs_path = os.path.abspath(raw_source)
+        if os.path.exists(abs_path):
+            pdf_files.append(abs_path)
 
         context_for_llm += (
             f"\nPrecedent {i+1}:\n"
@@ -190,7 +162,7 @@ def rule_on_incident(incident_description):
     return response.content, html_table, pdf_files
 
 
-# ── TEST CASES ────────────────────────────────────────────────────────────────
+
 
 class TestRelevance:
     def test_empty_input_returns_prompt(self):
@@ -274,7 +246,7 @@ class TestRelevance:
         assert isinstance(precedents, str)
         assert isinstance(files, list)
 
-    def test_precedents_contains_table(self):
+    def test_precedents_contains_ascii_table(self):
         ruling, precedents, files = rule_on_incident(
             "Car 16 caused a collision at the start by braking too late."
         )
@@ -299,7 +271,7 @@ class TestFormatEventName:
         assert result == "unknown_path"
 
 
-# ── UI ────────────────────────────────────────────────────────────────────────
+
 
 css = """
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
@@ -403,6 +375,71 @@ button.primary:hover {
     color: var(--text) !important;
 }
 
+.prec-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.prec-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    font-family: 'DM Sans', sans-serif;
+    color: #e8e8e8;
+    table-layout: fixed;
+    border-bottom: 2px solid #e8002d;
+}
+
+.prec-table thead tr {
+    background: #1a1a1a;
+    border-bottom: 2px solid #e8002d;
+}
+
+.prec-table th {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #e8002d;
+    padding: 0.6rem 0.8rem;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.prec-table td {
+    padding: 0.7rem 0.8rem;
+    vertical-align: top;
+    border-bottom: 1px solid #2a2a2a;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    line-height: 1.5;
+}
+
+.prec-table tbody tr:hover {
+    background: #1c1c1c;
+}
+
+.prec-num {
+    color: #e8002d;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    width: 3%;
+    white-space: nowrap;
+}
+
+.prec-event  { width: 16%; color: #fff; font-weight: 500; }
+.prec-driver { width: 10%; color: #ccc; }
+.prec-breach { width: 18%; color: #bbb; }
+.prec-decision { width: 14%; color: #a8d8a0; font-weight: 600; }
+.prec-reasoning { width: 39%; color: #999; font-style: italic; }
+
+/* Ruling box */
+#ruling-box .prose p, #ruling-box .markdown-body p {
+    line-height: 1.8 !important;
+}
+
 .section-divider {
     font-family: 'Orbitron', monospace;
     font-size: 0.6rem;
@@ -438,6 +475,7 @@ with gr.Blocks(theme=gr.themes.Base(), css=css) as demo:
             <p>Objective compliance engine — historical racing precedents</p>
         """)
 
+   
     incident_input = gr.Textbox(
         lines=5,
         label="Incident Description",
@@ -450,9 +488,11 @@ with gr.Blocks(theme=gr.themes.Base(), css=css) as demo:
     )
     submit_btn = gr.Button("Analyze Precedents", variant="primary")
 
+   
     gr.HTML('<div class="section-divider">⚑ &nbsp;Steward\'s Ruling</div>')
     ruling_output = gr.Markdown(elem_classes=["ruling-panel"])
 
+   
     gr.HTML('<div class="section-divider">📋 &nbsp;Cited Precedents</div>')
     precedents_output = gr.HTML()
 
