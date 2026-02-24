@@ -11,6 +11,14 @@ load_dotenv()
 from huggingface_hub import snapshot_download
 
 load_dotenv()
+if not os.path.exists("./fia_chroma_db") or not os.listdir("./fia_chroma_db"):
+    print("Downloading ChromaDB...")
+    snapshot_download(
+        repo_id="soumiks17/FIA-ChromaDB",
+        repo_type="dataset",
+        local_dir="./fia_chroma_db"
+    )
+    print("ChromaDB ready.")
 if not os.path.exists("./fia_pdfs"):
     print("Downloading PDFs...")
     snapshot_download(
