@@ -20,14 +20,6 @@ if not os.path.exists("./fia_pdfs"):
     )
     print("PDFs ready.")
 
-if not os.path.exists("./fia_chroma_db"):
-    print("Downloading ChromaDB...")
-    snapshot_download(
-        repo_id="soumiks17/FIA-ChromaDB",
-        repo_type="dataset",
-        local_dir="./fia_chroma_db"
-    )
-    print("ChromaDB ready.")
 
 embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 db = Chroma(persist_directory="./fia_chroma_db", embedding_function=embeddings)
