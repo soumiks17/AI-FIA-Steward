@@ -92,13 +92,14 @@ def build_context(docs_with_scores):
         raw_source = doc.metadata.get('source',   'Unknown')
         clean_source = format_event_name(raw_source)
 
-        # --- FIX: Dynamically reconstruct the path for the cloud server ---
+    
         if "fia_pdfs" in raw_source:
-            # Slice off the old Windows path and keep everything after 'fia_pdfs/'
+           
             relative_tail = re.split(r'fia_pdfs[\\/]', raw_source)[-1]
-            abs_path = os.path.abspath(os.path.join("./fia_pdfs", relative_tail))
+            linux_tail = relative_tail.replace('\\', '/')
+            abs_path = os.path.abspath(os.path.join("./fia_pdfs", linux_tail))
         else:
-            abs_path = os.path.abspath(raw_source)
+            abs_path = os.path.abspath(raw_source.replace('\\', '/'))
 
         if os.path.exists(abs_path):
             pdf_files.append(abs_path)
