@@ -23,7 +23,7 @@ embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 db = Chroma(persist_directory="./fia_chroma_db", embedding_function=embeddings)
 llm = ChatOpenAI(temperature=0.0, model="gpt-4o-mini")
 
-RELEVANCE_THRESHOLD = 1.1
+RELEVANCE_THRESHOLD = 1.2
 
 template = """
 You are the Chief FIA Steward. Analyze the user's incident based strictly on the provided historical precedents.
