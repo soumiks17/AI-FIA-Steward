@@ -8,6 +8,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+from huggingface_hub import snapshot_download
+
+load_dotenv()
+if not os.path.exists("./fia_pdfs"):
+    print("Downloading PDFs...")
+    snapshot_download(
+        repo_id="soumiks17/FIA-PDFs",
+        repo_type="dataset",
+        local_dir="./fia_pdfs"
+    )
+    print("PDFs ready.")
+
 embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 db = Chroma(persist_directory="./fia_chroma_db", embedding_function=embeddings)
 llm = ChatOpenAI(temperature=0.0, model="gpt-4o-mini")

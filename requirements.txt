@@ -6,3 +6,4 @@ python-dotenv
 chromadb
 openai
 pytest
+huggingface_hub
