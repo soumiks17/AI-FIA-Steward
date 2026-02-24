@@ -19,7 +19,7 @@ if not os.path.exists("./fia_chroma_db") or not os.listdir("./fia_chroma_db"):
         local_dir="./fia_chroma_db"
     )
     print("ChromaDB ready.")
-if not os.path.exists("./fia_pdfs") or not os.listdir("./fia_pdfs"):
+if not os.path.exists("./fia_pdfs"):
     print("Downloading PDFs...")
     snapshot_download(
         repo_id="soumiks17/FIA-PDFs",
@@ -27,6 +27,7 @@ if not os.path.exists("./fia_pdfs") or not os.listdir("./fia_pdfs"):
         local_dir="./fia_pdfs"
     )
     print("PDFs ready.")
+
 
 embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 db = Chroma(persist_directory="./fia_chroma_db", embedding_function=embeddings)
@@ -91,15 +92,9 @@ def build_context(docs_with_scores):
         raw_source = doc.metadata.get('source',   'Unknown')
         clean_source = format_event_name(raw_source)
 
-        
-    filename = os.path.basename(raw_source)
-    year_event = os.path.dirname(raw_source).replace("\\", "/")
-    for base in ["./fia_pdfs", "/app/fia_pdfs"]:
-        candidate = os.path.join(base, os.path.relpath(raw_source, "fia_pdfs")) if "fia_pdfs" in raw_source else os.path.join(base, filename)
-        candidate = os.path.normpath(candidate)
-        if os.path.exists(candidate):
-            pdf_files.append(candidate)
-            break
+        abs_path = os.path.abspath(raw_source)
+        if os.path.exists(abs_path):
+            pdf_files.append(abs_path)
 
         context_for_llm += (
             f"\nPrecedent {i+1}:\n"
