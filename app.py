@@ -92,9 +92,18 @@ def build_context(docs_with_scores):
         raw_source = doc.metadata.get('source',   'Unknown')
         clean_source = format_event_name(raw_source)
 
-        abs_path = os.path.abspath(raw_source)
+        # --- FIX: Dynamically reconstruct the path for the cloud server ---
+        if "fia_pdfs" in raw_source:
+            # Slice off the old Windows path and keep everything after 'fia_pdfs/'
+            relative_tail = re.split(r'fia_pdfs[\\/]', raw_source)[-1]
+            abs_path = os.path.abspath(os.path.join("./fia_pdfs", relative_tail))
+        else:
+            abs_path = os.path.abspath(raw_source)
+
         if os.path.exists(abs_path):
             pdf_files.append(abs_path)
+        else:
+            print(f"Warning: Could not find PDF at {abs_path}")
 
         context_for_llm += (
             f"\nPrecedent {i+1}:\n"
@@ -136,7 +145,6 @@ def build_context(docs_with_scores):
         html_table = ""
 
     return context_for_llm, html_table, pdf_files
-
 
 def rule_on_incident(incident_description):
     if not incident_description or not incident_description.strip():
@@ -497,7 +505,7 @@ with gr.Blocks(theme=gr.themes.Base(), css=css) as demo:
     precedents_output = gr.HTML()
 
     gr.HTML('<div class="section-divider">📄 &nbsp;Source Documents</div>')
-    documents_output = gr.File(label="")
+    documents_output = gr.File(label="", file_count="multiple")
 
     submit_btn.click(
         fn=rule_on_incident,
