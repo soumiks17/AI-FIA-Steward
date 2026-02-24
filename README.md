@@ -1,3 +1,14 @@
+---
+title: AI FIA Steward
+emoji: 🏎️
+colorFrom: red
+colorTo: gray
+sdk: gradio
+sdk_version: "4.0"
+app_file: app.py
+pinned: false
+---
+
 # 🏎️ AI FIA Steward
 
 An AI-powered Formula 1 steward that predicts penalties for on-track incidents by reasoning against real historical FIA decisions.
