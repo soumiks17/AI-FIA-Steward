@@ -515,4 +515,4 @@ with gr.Blocks(theme=gr.themes.Base(), css=css) as demo:
     )
 
 if __name__ == "__main__":
-    demo.launch()
+    demo.launch(ssr_mode=False)
