@@ -483,6 +483,15 @@ with gr.Blocks(theme=gr.themes.Base(), css=css) as demo:
             <h1>AI <span>FIA</span> STEWARD</h1>
             <p>Objective compliance engine — historical racing precedents</p>
         """)
+    gr.HTML("""
+    <div style="background:#1a1a1a;border:1px solid #e8002d;border-left:4px solid #e8002d;
+    border-radius:3px;padding:0.75rem 1rem;margin-bottom:1rem;
+    font-family:'DM Sans',sans-serif;font-size:0.82rem;color:#aaa;">
+    ⚠ &nbsp;<strong style="color:#e8e8e8;">Disclaimer:</strong>
+    This is an AI model and can make mistakes. Rulings are predictive only and not official FIA decisions.
+    Please verify important information with official sources.
+    </div>
+""")
 
    
     incident_input = gr.Textbox(
